@@ -22,11 +22,17 @@
 // stages must be greater than 2
 module jt12_sh_rst #(parameter width=5, stages=32, rstval=1'b0 )
 (
+`ifdef USE_AUTO_SS
+	input	   [width*stages-1:0]	   auto_ss_in,
+	output	   [width*stages-1:0]	   auto_ss_out,
+	input							   auto_ss_wr,
+`endif // USE_AUTO_SS
 	input					rst,	
 	input 					clk,
 	input					clk_en /* synthesis direct_enable */,
 	input		[width-1:0]	din,
    	output		[width-1:0]	drop
+	
 );
 
 reg [stages-1:0] bits[width-1:0];
@@ -35,10 +41,20 @@ wire [width-1:0] din_mx = rst ? {width{rstval[0]}} : din;
 genvar i;
 generate
 	for (i=0; i < width; i=i+1) begin: bit_shifter
-		always @(posedge clk) if(clk_en) begin
-			bits[i] <= {bits[i][stages-2:0], din_mx[i]};
+		always @(posedge clk) begin
+			if(clk_en) begin
+				bits[i] <= {bits[i][stages-2:0], din_mx[i]};
+			end
+`ifdef USE_AUTO_SS
+			if (auto_ss_wr) begin
+				bits[i] <= auto_ss_in[stages*i +: stages];
+			end
+`endif
 		end
 		assign drop[i] = bits[i][stages-1];
+`ifdef USE_AUTO_SS
+		assign auto_ss_out[stages*i +: stages] = bits[i];
+`endif
 	end
 endgenerate
 
