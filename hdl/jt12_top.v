@@ -477,8 +477,8 @@ generate
             // Unused:
             .sample     (           )
         );
-        assign snd_left  = fm_snd_left  + { 1'b0, psg_snd[9:0],5'd0};
-        assign snd_right = fm_snd_right + { 1'b0, psg_snd[9:0],5'd0};
+        assign snd_left  = fm_snd_left;
+        assign snd_right = fm_snd_right;
     end else begin : gen_nossg
         assign psg_snd  = 10'd0;
         assign snd_left = fm_snd_left;
